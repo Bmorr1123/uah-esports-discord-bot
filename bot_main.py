@@ -10,10 +10,9 @@ class EsportsBot(commands.Bot):
 
 def main():
     token = os.getenv("UAH_ESPORTS_TOKEN")
-
     intents = discord.Intents.default()
 
-    bot = EsportsBot()
+    bot = EsportsBot(intents=intents)
     bot.add_cog(practice_log_cog.PracticeLogs(bot))
     bot.run(token)
 
