@@ -1,14 +1,17 @@
 import json, csv, os
+import datetime
 
 DATA_ROOT = f"data/"
 
 class LogManager:
     def __init__(self):
-        self.headers: list = json.load(open(DATA_ROOT + "headers.json", "r+"))
-        self.team_info: dict = json.load(open(DATA_ROOT + "teams.json", "r+"))
+        self.team_info: dict = json.load(self.open_read_file(DATA_ROOT + "teams.json", default_data={}))
+        self.headers = ["Date", "Length", "Practice Type",  "Submitted At", "Submitted By"]
 
+        if "teams" not in self.team_info:
+            self.team_info["teams"] = []
         self.teams: list = self.team_info["teams"]
-        self.name_map = {team["team_name"]: team["id"] for team in self.team_info["teams"]}
+        self.team_name_to_id = {team["team_name"]: team["id"] for team in self.team_info["teams"]}
         # Filling the player map
         self.player_map = {}
         for team in self.teams:
@@ -16,11 +19,22 @@ class LogManager:
                 self.player_map[player] = team["id"]
 
         self.teams_dir = f"{DATA_ROOT}teams/"
+        self.save()
 
-    def __del__(self):
-        json.dump(self.headers, open(DATA_ROOT + "headers.json", "w+"))
-        json.dump(self.team_info, open(DATA_ROOT + "team_names.json", "w+"))
-        print("Dumped headers and name map")
+    def save(self):
+        json.dump(self.team_info, open(DATA_ROOT + "teams.json", "w+"), indent=4)
+        print("Dumped teams")
+
+    def open_read_file(self, path, default_data=None):
+        print(os.listdir(path[:path.rfind("/")]))
+        if path[path.rfind("/") + 1:] in os.listdir(path[:path.rfind("/")]):
+            return open(path, "r")
+        else:
+            new_file = open(path, "w")
+            if default_data is not None:
+                json.dump(default_data, new_file, indent=4)
+            new_file.close()
+            return open(path, "r")
 
     def create_team(self, team_name: str, id: str = None, player_ids: list[int] = None, game: str = None) -> int:
         """
@@ -33,8 +47,8 @@ class LogManager:
         """
         assert team_name
         if not id:
-            id = len(self.name_map)
-        self.name_map[team_name] = id  # We must update this because it isn't updated when adding a team.
+            id = len(self.team_name_to_id)
+        self.team_name_to_id[team_name] = id  # We must update this because it isn't updated when adding a team.
         self.teams.append({
                 "team_name": team_name,
                 "id": id,
@@ -42,6 +56,7 @@ class LogManager:
                 "game": game
         })
         self.create_log_file(id)
+        self.save()
         return id
 
     def create_log_file(self, id: int) -> str:
@@ -56,10 +71,11 @@ class LogManager:
 
         log_path = self.teams_dir + log_path
 
-        file = open(log_path, "w+")
-        writer = csv.DictWriter(file, fieldnames=self.headers)
-        print(f"Log file created for team id: \"{id}\"!")
-        return log_path
+        with open(log_path, "w+") as file:
+            writer = csv.DictWriter(file, fieldnames=self.headers)
+            writer.writeheader()
+            print(f"Log file created for team id: \"{id}\"!")
+            return log_path
 
     def get_log_file(self, *, id: int = None, team_name: str = None) -> str:
         """
@@ -68,9 +84,9 @@ class LogManager:
         :param team_name: Optional: the team name to find the team by.
         :return: The path to the .csv file.
         """
-        assert team_name or id
+        assert team_name is not None or id is not None
         if team_name:
-            id = self.name_map[team_name]
+            id = self.team_name_to_id[team_name]
 
         log_path = f"{id}.csv"
         if log_path not in os.listdir(self.teams_dir):
@@ -87,11 +103,28 @@ class LogManager:
         :param player_id: The id of the player.
         :return: The list of players on that team.
         """
-        assert team_id and player_id
+        assert team_id is not None and player_id is not None
         for team in self.teams:
             if team["id"] == team_id:
                 team["players"].append(player_id)
                 self.player_map[player_id] = team_id
+                self.save()
+                return team["players"]
+        raise LookupError(f"Cannot find team with team id: \"{team_id}\"!")
+
+    def remove_player_from_team(self, team_id: int, player_id: int) -> list[int]:
+        """
+        Adds a player to a team
+        :param team_id: The id of the team.
+        :param player_id: The id of the player.
+        :return: The list of players on that team.
+        """
+        assert team_id is not None and player_id is not None
+        for team in self.teams:
+            if team["id"] == team_id:
+                team["players"].remove(player_id)
+                del self.player_map[player_id]
+                self.save()
                 return team["players"]
         raise LookupError(f"Cannot find team with team id: \"{team_id}\"!")
 
@@ -113,5 +146,45 @@ class LogManager:
         for team in self.teams:
             if team["id"] == team_id:
                 team["game"] = game_name
+                self.save()
                 return team
         raise LookupError(f"Cannot find team with team id: \"{team_id}\"!")
+
+    def log_practice(self, team_id: int, date_of_practice: datetime.date, length: float, praccy_type: str, submitted_by_name: str):
+        with open(self.get_log_file(id=team_id), "a") as csvfile:
+            logfile = csv.writer(csvfile)
+            now = datetime.date.today()
+
+            logfile.writerow([
+                date_of_practice.strftime("%m/%d/%Y"),
+                length,
+                praccy_type,
+                now.strftime("%m/%d/%Y"),
+                submitted_by_name
+            ])
+
+    def get_log_as_objects(self, team_id: int) -> [dict]:
+        with open(self.get_log_file(id=team_id), "r") as csvfile:
+            csv_reader = csv.DictReader(csvfile)
+
+            deserialized = []
+            for entry in csv_reader:
+                deserialized.append({
+                    **entry,
+                    "Date": datetime.datetime.strptime(entry["Date"], "%m/%d/%Y").date(),
+                    "Submitted At": datetime.datetime.strptime(entry["Submitted At"], "%m/%d/%Y").date()
+                })
+            return deserialized
+
+    def get_most_recent_practice(self, team_id: int) -> dict:
+        log = self.get_log_as_objects(team_id)
+
+        most_recent = log[0]
+        for entry in log:
+            if entry["Date"] < most_recent["Date"]:
+                most_recent = entry
+
+        return most_recent
+
+    def get_inverse_team_map(self):
+        return {name: team_id for team_id, name in self.team_name_to_id.items()}

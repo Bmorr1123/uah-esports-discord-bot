@@ -7,13 +7,12 @@ class EsportsBot(commands.Bot):
         print(f"Logged in as {self.user.name} ({self.user.id})")
 
 
-
 def main():
     token = os.getenv("UAH_ESPORTS_TOKEN")
     intents = discord.Intents.default()
 
     bot = EsportsBot(intents=intents)
-    bot.add_cog(practice_log_cog.PracticeLogs(bot))
+    bot.add_application_command(practice_log_cog.logs)
     bot.run(token)
 
 
