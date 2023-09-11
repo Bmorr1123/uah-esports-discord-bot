@@ -6,7 +6,7 @@ DATA_ROOT = f"data/"
 class LogManager:
     def __init__(self):
         self.team_info: dict = json.load(self.open_read_file(DATA_ROOT + "teams.json", default_data={}))
-        self.headers = ["Date", "Length", "Practice Type",  "Submitted At", "Submitted By"]
+        self.headers = ["Date", "Length", "Practice Type",  "Submitted On", "Submitted By", "Result"]
 
         if "teams" not in self.team_info:
             self.team_info["teams"] = []
@@ -111,7 +111,7 @@ class LogManager:
                 team["players"].append(player_id)
                 self.player_map[player_id] = team_id
                 self.save()
-                return team["players"]
+                return team
         raise LookupError(f"Cannot find team with team id: \"{team_id}\"!")
 
     def remove_player_from_team(self, team_id: int, player_id: int) -> list[int]:
@@ -127,7 +127,7 @@ class LogManager:
                 team["players"].remove(player_id)
                 del self.player_map[player_id]
                 self.save()
-                return team["players"]
+                return team
         raise LookupError(f"Cannot find team with team id: \"{team_id}\"!")
 
     def get_team(self, team_id: int) -> dict:
@@ -152,7 +152,15 @@ class LogManager:
                 return team
         raise LookupError(f"Cannot find team with team id: \"{team_id}\"!")
 
-    def log_practice(self, team_id: int, date_of_practice: datetime.date, length: float, praccy_type: str, submitted_by_name: str):
+    def log_practice(
+            self,
+            team_id: int,
+            date_of_practice: datetime.date,
+            length: float,
+            praccy_type: str,
+            submitted_by_name: str,
+            result: str
+    ):
         with open(self.get_log_file(id=team_id), "a") as csvfile:
             logfile = csv.writer(csvfile)
             now = datetime.date.today()
@@ -162,7 +170,8 @@ class LogManager:
                 length,
                 praccy_type,
                 now.strftime("%m/%d/%Y"),
-                submitted_by_name
+                submitted_by_name,
+                result
             ])
 
     def get_log_as_objects(self, team_id: int) -> [dict]:
@@ -174,7 +183,7 @@ class LogManager:
                 deserialized.append({
                     **entry,
                     "Date": datetime.datetime.strptime(entry["Date"], "%m/%d/%Y").date(),
-                    "Submitted At": datetime.datetime.strptime(entry["Submitted At"], "%m/%d/%Y").date()
+                    "Submitted On": datetime.datetime.strptime(entry["Submitted On"], "%m/%d/%Y").date()
                 })
             return deserialized
 
@@ -183,7 +192,7 @@ class LogManager:
 
         most_recent = log[0]
         for entry in log:
-            if entry["Date"] < most_recent["Date"]:
+            if entry["Date"] > most_recent["Date"]:
                 most_recent = entry
 
         return most_recent

@@ -13,6 +13,7 @@ def main():
 
     bot = EsportsBot(intents=intents)
     bot.add_application_command(practice_log_cog.logs)
+    bot.add_application_command(practice_log_cog.teams)
     bot.run(token)
 
 
