@@ -48,6 +48,8 @@ class LogManager:
         assert team_name
         if not id:
             id = len(self.team_name_to_id)
+            while id in self.team_name_to_id.values():
+                id += 1
         self.team_name_to_id[team_name] = id  # We must update this because it isn't updated when adding a team.
         self.teams.append({
                 "team_name": team_name,
