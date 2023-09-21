@@ -105,7 +105,7 @@ async def get_log_results(ctx: discord.AutocompleteContext):
 
 # --------------------------------------------------------------------------------------------------------- Commands ---
 
-@teams.command(name="create", description="Creates a team.", guild_ids=[566299354088865812])
+@teams.command(name="create", description="Creates a team.")  # guild_ids=[566299354088865812]
 @discord.option(
     "team_name",
     str,
@@ -158,7 +158,7 @@ async def create_team(
         "json"
     ))
 
-@teams.command(name="get", description="Gets team info.", guild_ids=[566299354088865812])
+@teams.command(name="get", description="Gets team info.")  # guild_ids=[566299354088865812]
 @discord.option(
     "team_name",
     str,
@@ -178,11 +178,11 @@ async def get_team_info(ctx: discord.ApplicationContext, *, team_name=None, team
 
     await ctx.respond(format_codeblock(format_json(team_info), "json"))
 
-@teams.command(name="all", description="Gets team info.", guild_ids=[566299354088865812])
+@teams.command(name="all", description="Gets team info.")  # guild_ids=[566299354088865812]
 async def get_team_info(ctx: discord.ApplicationContext):
     await ctx.respond(format_codeblock(format_json(logger.teams), "json"))
 
-@logs.command(description="Logs a practice.", guild_ids=[566299354088865812])
+@logs.command(description="Logs a practice.")  # guild_ids=[566299354088865812]
 @discord.option(
     "team_name",
     str,
@@ -260,7 +260,7 @@ async def log(ctx, *, log_type: str, date: str, duration: int, unit: str, result
 
     await ctx.respond("Logged practice")
 
-@teams.command(description="Adds a player to a team.", guild_ids=[566299354088865812])
+@teams.command(description="Adds a player to a team.")  # guild_ids=[566299354088865812]
 @discord.option(
     "team_name",
     str,
@@ -287,7 +287,7 @@ async def add_player(ctx, *, player: discord.Member, team_id: int = None, team_n
         )
     )
 
-@teams.command(description="Removes a player from a team.", guild_ids=[566299354088865812])
+@teams.command(description="Removes a player from a team.")  # guild_ids=[566299354088865812]
 @discord.option(
     "team_name",
     str,
@@ -314,7 +314,7 @@ async def remove_player(ctx, *, player: discord.Member, team_id: int = None, tea
         )
     )
 
-@logs.command(description="Returns csv containing practices for a team.", guild_ids=[566299354088865812])
+@logs.command(description="Returns csv containing practices for a team.")  # guild_ids=[566299354088865812]
 @discord.option(
     "team_name",
     str,
@@ -334,7 +334,7 @@ async def get_log(ctx, *, team_name=None, team_id: int = None):
     await ctx.respond(file=discord.File(file_path))
 
 
-@logs.command(description="Returns csv containing practices for a team.", guild_ids=[566299354088865812])
+@logs.command(description="Returns csv containing practices for a team.")  # guild_ids=[566299354088865812]
 @discord.option(
     "team_name",
     str,
@@ -362,7 +362,7 @@ async def get_most_recent(ctx, *, team_name=None, team_id: int = None):
          )
     )
 
-@logs.command(description="Calls out teams which have not practiced.", guild_ids=[566299354088865812])
+@logs.command(description="Calls out teams which have not practiced.")  # guild_ids=[566299354088865812]
 async def snitch(ctx: discord.ApplicationContext):
     await ctx.respond("Snitching on these bitches...")
 
@@ -377,7 +377,7 @@ async def snitch(ctx: discord.ApplicationContext):
 
     await ctx.respond(content=format_codeblock(response))
 
-@logs.command(description="Pings teams which have not practiced.", guild_ids=[566299354088865812])
+@logs.command(description="Pings teams which have not practiced.")  # guild_ids=[566299354088865812]
 async def ping_baddies(ctx: discord.ApplicationContext):
     guilty, innocent = sort_teams_into_bad_and_good()
     inverse_map = logger.get_inverse_team_map()
