@@ -209,7 +209,7 @@ def verify_parameters_for_log(ctx, result, unit, duration, str_date, team_id=Non
 
     return None
 
-@logs.command(description="Logs a practice.", guild_ids=[566299354088865812])  # guild_ids=[566299354088865812]
+@logs.command(description="Logs a practice.")  # guild_ids=[566299354088865812]
 @discord.option(
     "team_name",
     str,
@@ -271,7 +271,7 @@ async def practice(ctx, *, date_of: str, duration: float, unit: str, result: str
     await ctx.respond("Logged practice")
 
 
-@logs.command(description="Logs a scrimmage.", guild_ids=[566299354088865812])  # guild_ids=[566299354088865812]
+@logs.command(description="Logs a scrimmage.")  # guild_ids=[566299354088865812]
 @discord.option(
     "team_name",
     str,
