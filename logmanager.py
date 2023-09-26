@@ -6,7 +6,7 @@ DATA_ROOT = f"data/"
 class LogManager:
     def __init__(self):
         self.team_info: dict = json.load(self.open_read_file(DATA_ROOT + "teams.json", default_data={}))
-        self.headers = ["Date", "Length", "Practice Type",  "Submitted On", "Submitted By", "Result"]
+        self.headers = ["Date", "Length", "Type",  "Submitted On", "Submitted By", "Result, Opponent"]
 
         if "teams" not in self.team_info:
             self.team_info["teams"] = []
@@ -152,14 +152,15 @@ class LogManager:
                 return team
         raise LookupError(f"Cannot find team with team id: \"{team_id}\"!")
 
-    def log_practice(
+    def add_log(
             self,
             team_id: int,
             date_of_practice: datetime.date,
-            length: float,
-            praccy_type: str,
+            length: str,
+            log_type: str,
             submitted_by_name: str,
-            result: str
+            result: str,
+            opponent: str
     ):
         with open(self.get_log_file(id=team_id), "a") as csvfile:
             logfile = csv.writer(csvfile)
@@ -168,10 +169,11 @@ class LogManager:
             logfile.writerow([
                 date_of_practice.strftime("%m/%d/%Y"),
                 length,
-                praccy_type,
+                log_type,
                 now.strftime("%m/%d/%Y"),
                 submitted_by_name,
-                result
+                result,
+                opponent
             ])
 
     def get_log_as_objects(self, team_id: int) -> [dict]:

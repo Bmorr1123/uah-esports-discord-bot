@@ -5,6 +5,7 @@ from typing import Union
 import discord
 import discord.ext.commands as commands
 import logmanager
+import re
 
 
 logs = discord.SlashCommandGroup("log", "Logging commands")
@@ -182,6 +183,31 @@ async def get_team_info(ctx: discord.ApplicationContext, *, team_name=None, team
 async def get_team_info(ctx: discord.ApplicationContext):
     await ctx.respond(format_codeblock(format_json(logger.teams), "json"))
 
+
+def verify_parameters_for_log(ctx, result, unit, duration, str_date, team_id=None, team_name=None) -> str | None:
+    if result not in result_options:
+        return f"Result must be one of: {', '.join(result_options)}"
+    if unit not in units:
+        return f"Unit must be one of: {', '.join(units)}"
+    try:
+        duration = int(float(duration))
+    except ValueError:
+        return f"Duration must be formatted as an int or float."
+    if str_date:
+        m = re.match("\\d?\\d/\\d?\\d", str_date)
+        if m:
+            s, e = m.span()
+            if not (s == 0 and e == len(str_date)):
+                return f"Date was not formatted correctly"
+        else:
+            f"Date was not formatted correctly"
+    try:
+        team_id = get_team_id_using(team_id=team_id, team_name=team_name, ctx=ctx)
+    except TeamNotFoundException:
+        return "Could not find team! The command user must pass a team name, a team id, or be listed as a player on a team."
+
+    return None
+
 @logs.command(description="Logs a practice.")  # guild_ids=[566299354088865812]
 @discord.option(
     "team_name",
@@ -191,15 +217,8 @@ async def get_team_info(ctx: discord.ApplicationContext):
     required=False
 )
 @discord.option(
-    "log_type",
-    str,
-    description="Are you logging a practice or a game?",
-    required=True,
-    autocomplete=discord.utils.basic_autocomplete(get_log_type)
-)
-@discord.option(
     "duration",
-    int,
+    float,
     description="The number of units you played. For example: \"2\" hours or a Best-of \"5\"",
     required=True
 )
@@ -211,7 +230,7 @@ async def get_team_info(ctx: discord.ApplicationContext):
     autocomplete=discord.utils.basic_autocomplete(get_unit_options)
 )
 @discord.option(
-    "date",
+    "date_of",
     str,
     description="Date formatted as Month/Day. For example: 6/9 or 4/20",
     required=True
@@ -223,42 +242,102 @@ async def get_team_info(ctx: discord.ApplicationContext):
     required=False,
     autocomplete=discord.utils.basic_autocomplete(get_log_results)
 )
-async def log(ctx, *, log_type: str, date: str, duration: int, unit: str, result: str = "N/A", team_id: int = None, team_name=None):
+async def practice(ctx, *, date_of: str, duration: float, unit: str, result: str = "N/A", team_id: int = None, team_name=None):
 
-    if result not in result_options:
-        await ctx.respond(f"Result must be one of: {', '.join(result_options)}")
-    if log_type not in log_types:
-        await ctx.respond(f"Log_type must be one of: {', '.join(log_types)}")
-    if unit not in units:
-        await ctx.respond(f"Unit must be one of: {', '.join(units)}")
-
-    try:
-        team_id = get_team_id_using(team_id=team_id, team_name=team_name, ctx=ctx)
-    except TeamNotFoundException:
-        await ctx.respond(
-            "Could not find team! The command user must pass a team name, a team id, or be listed as a player on a team.")
+    error = verify_parameters_for_log(ctx, result, unit, duration, date_of, team_id, team_name)
+    if error:
+        await ctx.respond(error)
         return
 
-    if date:
-        date += f"/{datetime.date.today().year}"
-        try:
-            date = datetime.datetime.strptime(date, "%m/%d/%Y").date()
+    team_id = get_team_id_using(team_id=team_id, team_name=team_name, ctx=ctx)
 
-            # Handling the case that the date was last year (such as in December)
-            if datetime.date.today() - date < datetime.timedelta(0):
-                date = f"{date.strftime('%m/%d')}/{date.year - 1}"  # Removing 1 from the year
-                date = datetime.datetime.strptime(date, "%m/%d").date()
-        except Exception:
-            await ctx.respond("Date was formatted incorrectly. Please input a date in format MM/DD.")
-            return
+    if date_of:
+        if date_of.count("/") < 2:
+            date_of += f"/{datetime.date.today().year}"
+        date_of = datetime.datetime.strptime(date_of, "%m/%d/%Y").date()
+
+        # Handling the case that the date was last year (such as in December)
+        if datetime.date.today() - date_of < datetime.timedelta(0):
+            date_of = f"{date_of.strftime('%m/%d')}/{date_of.year - 1}"  # Removing 1 from the year
+            date_of = datetime.datetime.strptime(date_of, "%m/%d").date()
     else:
-        date = datetime.date.today()
+        date_of = datetime.date.today()
 
     duration = f"{duration} {unit}" if unit != "best-of" else f"{unit}-{duration}"
 
-    logger.log_practice(team_id, date, duration, log_type, ctx.author.name, result)
+    logger.add_log(team_id, date_of, duration, "Practice", ctx.author.name, result)
 
     await ctx.respond("Logged practice")
+
+
+@logs.command(description="Logs a scrimmage.")  # guild_ids=[566299354088865812]
+@discord.option(
+    "team_name",
+    str,
+    description="Optional: The name of the team you want to operate on.",
+    autocomplete=discord.utils.basic_autocomplete(get_team_names),
+    required=False
+)
+@discord.option(
+    "duration",
+    float,
+    description="The number of units you played. For example: \"2\" hours or a Best-of \"5\"",
+    required=True
+)
+@discord.option(
+    "unit",
+    str,
+    description="The unit of time you're measuring your practice in. For example \"hours\" or \"best-of\".",
+    required=True,
+    autocomplete=discord.utils.basic_autocomplete(get_unit_options)
+)
+@discord.option(
+    "date_of",
+    str,
+    description="Date formatted as Month/Day. For example: 6/9 or 4/20",
+    required=True
+)
+@discord.option(
+    "result",
+    str,
+    description="Did you win, lose, or is it not applicable? Default is N/A",
+    required=False,
+    autocomplete=discord.utils.basic_autocomplete(get_log_results)
+)
+@discord.option(
+    "opponent_name",
+    str,
+    description="Optional: The name of the team you scrimmed against.",
+    autocomplete=discord.utils.basic_autocomplete(get_team_names),
+    required=False
+)
+async def scrim(ctx, *, date_of: str, duration: float, unit: str, result: str = "N/A", opponent_name: str = None, team_id: int = None, team_name=None):
+
+    error = verify_parameters_for_log(ctx, result, unit, duration, date_of, team_id, team_name)
+    if error:
+        await ctx.respond(error)
+        return
+
+    team_id = get_team_id_using(team_id=team_id, team_name=team_name, ctx=ctx)
+
+    if date_of:
+        if date_of.count("/") < 2:
+            date_of += f"/{datetime.date.today().year}"
+        date_of = datetime.datetime.strptime(date_of, "%m/%d/%Y").date()
+
+        # Handling the case that the date was last year (such as in December)
+        if datetime.date.today() - date_of < datetime.timedelta(0):
+            date_of = f"{date_of.strftime('%m/%d')}/{date_of.year - 1}"  # Removing 1 from the year
+            date_of = datetime.datetime.strptime(date_of, "%m/%d").date()
+    else:
+        date_of = datetime.date.today()
+
+    duration = f"{duration} {unit}" if unit != "best-of" else f"{unit}-{duration}"
+
+    logger.add_log(team_id, date_of, duration, "Scrimmage", ctx.author.name, result, opponent_name)
+
+    await ctx.respond("Logged scrim")
+
 
 @teams.command(description="Adds a player to a team.")  # guild_ids=[566299354088865812]
 @discord.option(
