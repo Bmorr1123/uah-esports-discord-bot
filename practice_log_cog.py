@@ -182,8 +182,10 @@ async def get_team_info(ctx: discord.ApplicationContext, *, team_name=None, team
 
 @teams.command(name="all", description="Gets team info.")  # guild_ids=[566299354088865812]
 async def get_team_info(ctx: discord.ApplicationContext):
-    await ctx.respond(format_codeblock(format_json(logger.teams), "json"))
-
+    try:
+        await ctx.respond(format_codeblock(format_json(logger.teams), "json"))
+    except discord.HTTPException:
+        await ctx.respond(file=discord.File(logger.get_team_json_path()))
 
 def verify_parameters_for_log(ctx, result, unit, duration, str_date, team_id=None, team_name=None):
     if result not in result_options:

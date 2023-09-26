@@ -61,6 +61,9 @@ class LogManager:
         self.save()
         return id
 
+    def get_team_json_path(self):
+        return DATA_ROOT + "teams.json"
+
     def create_log_file(self, id: int) -> str:
         """
         This function creates a log file and returns the path to it.
