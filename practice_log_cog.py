@@ -71,15 +71,15 @@ async def get_log_type(ctx: discord.AutocompleteContext):
     return [log_type for log_type in log_types if log_type.startswith(ctx.value.lower())]
 
 games_with_acronyms = [
-    ["Rock Leg", "RL"],
-    ["Valiant", "Val"],
-    ["League of Legends (stinky)", "LoL"],
-    ["Rainbow Dick Siege", "R6"],
-    ["Apesex Legends", "Apex"],
-    ["Kartio Mart", "MK8dlx"],
-    ["Overwatch 1++", "OW2"],
-    ["Call of Booty", "COD"],
-    ["Counter-Stroke", "CS"],
+    ["Rocket League", "RL"],
+    ["Valorant", "Val"],
+    ["League of Legends", "LoL"],
+    ["Rainbow Six Siege", "R6"],
+    ["Apex Legends", "Apex"],
+    ["Mario Kart", "MK8dlx"],
+    ["Overwatch", "OW2"],
+    ["Call of Duty", "COD"],
+    ["Counter-Strike", "CS"],
     ["Other", "Other"]
 ]
 
