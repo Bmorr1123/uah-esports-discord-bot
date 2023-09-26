@@ -185,7 +185,7 @@ async def get_team_info(ctx: discord.ApplicationContext):
     await ctx.respond(format_codeblock(format_json(logger.teams), "json"))
 
 
-def verify_parameters_for_log(ctx, result, unit, duration, str_date, team_id=None, team_name=None) -> str | None:
+def verify_parameters_for_log(ctx, result, unit, duration, str_date, team_id=None, team_name=None):
     if result not in result_options:
         return f"Result must be one of: {', '.join(result_options)}"
     if unit not in units:
