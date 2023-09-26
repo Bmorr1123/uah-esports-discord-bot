@@ -79,6 +79,7 @@ games_with_acronyms = [
     ["Kartio Mart", "MK8dlx"],
     ["Overwatch 1++", "OW2"],
     ["Call of Booty", "COD"],
+    ["Counter-Stroke", "CS"],
     ["Other", "Other"]
 ]
 
@@ -208,7 +209,7 @@ def verify_parameters_for_log(ctx, result, unit, duration, str_date, team_id=Non
 
     return None
 
-@logs.command(description="Logs a practice.")  # guild_ids=[566299354088865812]
+@logs.command(description="Logs a practice.", guild_ids=[566299354088865812])  # guild_ids=[566299354088865812]
 @discord.option(
     "team_name",
     str,
@@ -270,7 +271,7 @@ async def practice(ctx, *, date_of: str, duration: float, unit: str, result: str
     await ctx.respond("Logged practice")
 
 
-@logs.command(description="Logs a scrimmage.")  # guild_ids=[566299354088865812]
+@logs.command(description="Logs a scrimmage.", guild_ids=[566299354088865812])  # guild_ids=[566299354088865812]
 @discord.option(
     "team_name",
     str,
@@ -308,7 +309,6 @@ async def practice(ctx, *, date_of: str, duration: float, unit: str, result: str
     "opponent_name",
     str,
     description="Optional: The name of the team you scrimmed against.",
-    autocomplete=discord.utils.basic_autocomplete(get_team_names),
     required=False
 )
 async def scrim(ctx, *, date_of: str, duration: float, unit: str, result: str = "N/A", opponent_name: str = None, team_id: int = None, team_name=None):
@@ -332,7 +332,7 @@ async def scrim(ctx, *, date_of: str, duration: float, unit: str, result: str = 
     else:
         date_of = datetime.date.today()
 
-    duration = f"{duration} {unit}" if unit != "best-of" else f"{unit}-{duration}"
+    duration = f"{int(duration)} {unit}" if unit != "best-of" else f"{unit}-{duration}"
 
     logger.add_log(team_id, date_of, duration, "Scrimmage", ctx.author.name, result, opponent_name)
 

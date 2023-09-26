@@ -160,9 +160,9 @@ class LogManager:
             log_type: str,
             submitted_by_name: str,
             result: str,
-            opponent: str
+            opponent: str = ""
     ):
-        with open(self.get_log_file(id=team_id), "a") as csvfile:
+        with open(self.get_log_file(id=team_id), "a", newline="") as csvfile:
             logfile = csv.writer(csvfile)
             now = datetime.date.today()
 
@@ -189,13 +189,14 @@ class LogManager:
                 })
             return deserialized
 
-    def get_most_recent_practice(self, team_id: int) -> dict:
+    def get_most_recent_practice(self, team_id: int, include_matches=False) -> dict:
         log = self.get_log_as_objects(team_id)
 
         most_recent = log[0]
         for entry in log:
-            if entry["Date"] > most_recent["Date"]:
-                most_recent = entry
+            if entry["Type"] in ["Scrimmage", "Practice"] or include_matches:
+                if entry["Date"] > most_recent["Date"]:
+                    most_recent = entry
 
         return most_recent
 
