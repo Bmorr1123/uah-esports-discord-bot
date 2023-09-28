@@ -195,6 +195,8 @@ class LogManager:
     def get_most_recent_practice(self, team_id: int, include_matches=False) -> dict:
         log = self.get_log_as_objects(team_id)
 
+        if len(log) == 0:
+            return None
         most_recent = log[0]
         for entry in log:
             if entry["Type"] in ["Scrimmage", "Practice"] or include_matches:

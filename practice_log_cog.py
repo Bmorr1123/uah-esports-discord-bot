@@ -42,11 +42,14 @@ def sort_teams_into_bad_and_good():
 
     guilty, innocent = [], []
     for team, practice in most_recent_practices.items():
-        tup = (team, practice["Date"].strftime("%m/%d/%Y"))
-        if practice["Date"] < about_two_weeks_ago:
-            guilty.append(tup)
+        if practice is None:
+            guilty.append((team, practice))
         else:
-            innocent.append(tup)
+            tup = (team, practice["Date"].strftime("%m/%d/%Y"))
+            if practice["Date"] < about_two_weeks_ago:
+                guilty.append(tup)
+            else:
+                innocent.append(tup)
     return guilty, innocent
 # ----------------------------------------------------------------------------------------------------- Autocomplete ---
 
