@@ -211,12 +211,12 @@ class LogManager:
     def get_mega_log(self):
 
         mega_log_path = DATA_ROOT + "mega_log.csv"
-        mega_log_file = open(mega_log_path, "w+")
+        mega_log_file = open(mega_log_path, "w+", newline="")
         
         modified_headers = ["Team Name", "Team ID", "Game"] + [header for header in self.headers]
 
-        mega_log = csv.writer(mega_log_file, fieldnames=modified_headers)
-        mega_log.writeheader()
+        mega_log = csv.writer(mega_log_file)
+        mega_log.writerow(modified_headers)
 
         for team in self.teams:
             log_path = self.teams_dir + f"{id}.csv"
