@@ -458,7 +458,7 @@ async def snitch(ctx: discord.ApplicationContext):
     guilty = "\n\t".join([f"{inverse_map[team_id]}: {last_practice_date}" for team_id, last_practice_date in guilty])
     innocent = "\n\t".join([f"{inverse_map[team_id]}: {last_practice_date}" for team_id, last_practice_date in innocent])
 
-    response = f"Guilty Mfers:\n\t{guilty}\nInnocent Angels:\n\t{innocent}"
+    response = f"Guilty:\n\t{guilty}\nInnocent:\n\t{innocent}"
 
     await msg.edit(content=format_codeblock(response))
 
