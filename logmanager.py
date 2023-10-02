@@ -6,7 +6,7 @@ DATA_ROOT = f"data/"
 class LogManager:
     def __init__(self):
         self.team_info: dict = json.load(self.open_read_file(DATA_ROOT + "teams.json", default_data={}))
-        self.headers = ["Date", "Length", "Type",  "Submitted On", "Submitted By", "Result, Opponent"]
+        self.headers = ["Date", "Length", "Type",  "Submitted On", "Submitted By", "Result", "Opponent"]
 
         if "teams" not in self.team_info:
             self.team_info["teams"] = []
