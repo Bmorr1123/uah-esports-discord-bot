@@ -471,7 +471,7 @@ async def ping_violators(ctx: discord.ApplicationContext):
     to_ping = {team_id: logger.get_team(team_id)["players"] for team_id, last_practice in guilty}
 
     if len(to_ping) == 0:
-        await ctx.respond("There are no baddies!!!")
+        await ctx.respond("There are no violators!!!")
         return
 
     msg = "The following teams need to practice:\n"
