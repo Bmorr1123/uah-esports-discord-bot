@@ -227,7 +227,7 @@ class LogManager:
                         team["team_name"],
                         team["id"],
                         team["game"],
-                        *[row[header] for header in self.headers]
+                        *[row[header] if header in row else "" for header in self.headers]
                     ])
         
         mega_log_file.close()
