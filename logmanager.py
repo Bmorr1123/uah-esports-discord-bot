@@ -219,7 +219,7 @@ class LogManager:
         mega_log.writerow(modified_headers)
 
         for team in self.teams:
-            log_path = self.teams_dir + f"{id}.csv"
+            log_path = self.teams_dir + f"{team["id"]}.csv"
             with open(log_path, "r") as file:
                 reader = csv.DictReader(file)
                 for row in reader:
