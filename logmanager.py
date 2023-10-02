@@ -207,3 +207,28 @@ class LogManager:
 
     def get_inverse_team_map(self):
         return {name: team_id for team_id, name in self.team_name_to_id.items()}
+
+    def get_mega_log(self):
+
+        mega_log_path = DATA_ROOT + "mega_log.csv"
+        mega_log_file = open(mega_log_path, "w+")
+        
+        modified_headers = ["Team Name", "Team ID", "Game"] + [header for header in self.headers]
+
+        mega_log = csv.writer(mega_log_file, fieldnames=modified_headers)
+        mega_log.writeheader()
+
+        for team in self.teams:
+            log_path = self.teams_dir + f"{id}.csv"
+            with open(log_path, "r") as file:
+                reader = csv.DictReader(file)
+                for row in reader:
+                    mega_log.writerow([
+                        team["team_name"],
+                        team["id"],
+                        team["game"],
+                        *[row[header] for header in self.headers]
+                    ])
+        
+        mega_log_file.close()
+        return mega_log_path

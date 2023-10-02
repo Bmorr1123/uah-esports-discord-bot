@@ -479,3 +479,8 @@ async def ping_baddies(ctx: discord.ApplicationContext):
         msg += f"**{inverse_map[team_id]}**:\n\t" + "\n\t".join([f"<@{player}>" for player in players]) + "\n"
 
     await ctx.respond(msg)
+
+@logs.command(description="Creates and returns a file with every single log in it.")
+async def get_mega_log(ctx: discord.ApplicationContext):
+    file_path = logger.get_mega_log()
+    await ctx.respond(file=discord.File(file_path))
