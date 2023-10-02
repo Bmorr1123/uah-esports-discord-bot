@@ -449,7 +449,7 @@ async def get_most_recent(ctx, *, team_name=None, team_id: int = None):
 @logs.command(description="Calls out teams which have not practiced.")  # guild_ids=[566299354088865812]
 @discord.default_permissions(manage_messages=True)
 async def snitch(ctx: discord.ApplicationContext):
-    await ctx.respond("Snitching on these bitches...")
+    msg = await ctx.respond("Snitching on these bitches...")
 
     guilty, innocent = sort_teams_into_bad_and_good()
 
@@ -460,11 +460,11 @@ async def snitch(ctx: discord.ApplicationContext):
 
     response = f"Guilty Mfers:\n\t{guilty}\nInnocent Angels:\n\t{innocent}"
 
-    await ctx.respond(content=format_codeblock(response))
+    await msg.edit(content=format_codeblock(response))
 
 @logs.command(description="Pings teams which have not practiced.")  # guild_ids=[566299354088865812]
 @discord.default_permissions(manage_messages=True)
-async def ping_baddies(ctx: discord.ApplicationContext):
+async def ping_violators(ctx: discord.ApplicationContext):
     guilty, innocent = sort_teams_into_bad_and_good()
     inverse_map = logger.get_inverse_team_map()
 
